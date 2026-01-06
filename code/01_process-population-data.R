@@ -1,23 +1,25 @@
 # Process Census population data for DC ----------------------------------
 
-# Setup ------------------------------------------------------------------
+# %% Setup ---------------------------------------------------------------
 
 library(tidyverse)
 library(tidycensus)
 library(readxl)
 library(pdftools)
 library(conflicted)
+library(here)
 
 conflicts_prefer(dplyr::filter)
 
 # Prep DC population data from 1990 to 2024 ------------------------------
 
-# > 1990-1999 data from PDF ====
+# %% 1990-1999 data from PDF ====
 # Citation: U.S. Census Bureau, Population Division,
 # "Table CO-EST2001-12-00 - Time Series of Intercensal State Population
 # Estimates: April 1, 1990 to April 1, 2000" 2002.
 # <https://www.census.gov/data/tables/time-series/demo/popest/intercensal-1990-2000-state-and-county-totals.html>
-pdf_text <- pdf_text("data/raw/co-est2001-12-00.pdf")
+
+pdf_text <- pdf_text(here("data/raw/co-est2001-12-00.pdf"))
 lines <- str_split(pdf_text[1], fixed("\n"))[[1]]
 
 # Process the extracted table to get DC data
@@ -35,14 +37,14 @@ dc_population_1999 <- dc_population_1999 |>
 	filter(!year %in% c("1990 April", "2000")) |>
 	mutate(value = as.integer(str_remove_all(value, fixed(","))))
 
-# > 2000-2009 data from CSV ====
+# %% 2000-2009 data from CSV ====
 # Citation: U.S. Census Bureau, Population Division,
 # "Table 1. Intercensal Estimates of the Resident Population for the
 # United States, Regions, States, and Puerto Rico:
 # April 1, 2000 to July 1, 2010 (ST-EST00INT-01)" 2011.
 # <https://www.census.gov/data/tables/time-series/demo/popest/intercensal-2000-2010-state.html>
 
-dc_population_2009 <- read_csv("data/raw/st-est00int-01.csv", skip = 3)
+dc_population_2009 <- read_csv(here("data/raw/st-est00int-01.csv"), skip = 3)
 
 dc_population_2009 <- dc_population_2009 |>
 	filter(...1 == ".District of Columbia") |>
@@ -54,13 +56,16 @@ dc_population_2009 <- dc_population_2009 |>
 	pivot_longer(cols = -NAME, names_to = "year", values_to = "value") |>
 	mutate(value = as.integer(value))
 
-# > 2010-2019 data from Excel ====
+# %% 2010-2019 data from Excel ====
 # Citation: U.S. Census Bureau, Population Division,
 # "Intercensal Estimates of the Resident Population for the United States,
 # Regions, States, District of Columbia, and Puerto Rico:
 # April 1, 2010 to April 1, 2020 (NST-EST2020INT-POP)" 2024.
 # <https://www.census.gov/data/tables/time-series/demo/popest/intercensal-2010-2020-state.html>
-dc_population_2019 <- read_xlsx("data/raw/nst-est2020int-pop.xlsx", skip = 3)
+dc_population_2019 <- read_xlsx(
+	here("data/raw/nst-est2020int-pop.xlsx"),
+	skip = 3
+)
 
 dc_population_2019 <- dc_population_2019 |>
 	filter(...1 == ".District of Columbia") |>
@@ -72,7 +77,7 @@ dc_population_2019 <- dc_population_2019 |>
 	pivot_longer(cols = -NAME, names_to = "year", values_to = "value") |>
 	mutate(value = as.integer(value))
 
-# > 2020-2024 data from tidycensus ====
+# %% 2020-2024 data from tidycensus ====
 # Citation: U.S. Census Bureau, Population Division,
 # "Annual Estimates of the Resident Population for
 # the United States, Regions, States, District of Columbia, and Puerto Rico:
@@ -96,7 +101,7 @@ dc_population_2024 <- dc_population_2024 |>
 	select(NAME, year, value) |>
 	mutate(year = as.character(year))
 
-# > Combine all data ====
+# %% Combine all data ====
 
 dc_population <- bind_rows(
 	dc_population_1999,
@@ -106,6 +111,6 @@ dc_population <- bind_rows(
 ) |>
 	arrange(year)
 
-# Write data -------------------------------------------------------------
+# %% Write data ----------------------------------------------------------
 
-write_csv(dc_population, "data/processed/dc-population-1990-2024.csv")
+write_csv(dc_population, here("data/processed/dc-population-1990-2024.csv"))
