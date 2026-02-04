@@ -88,16 +88,16 @@ dc_population_2019 <- dc_population_2019 |>
 # Load US Census Boundary and Attribute Data as 'tidyverse' and
 # 'sf'-Ready Data Frames_. R package version 1.7.3,
 # <https://walker-data.com/tidycensus/>.
-dc_population_2024 <- get_estimates(
+dc_population_2025 <- get_estimates(
 	geography = "state",
 	state = "11",
 	time_series = TRUE,
-	vintage = 2024,
+	vintage = 2025,
 	variables = "POPESTIMATE",
 	breakdown_labels = TRUE
 )
 
-dc_population_2024 <- dc_population_2024 |>
+dc_population_2025 <- dc_population_2025 |>
 	select(NAME, year, value) |>
 	mutate(year = as.character(year))
 
@@ -107,10 +107,10 @@ dc_population <- bind_rows(
 	dc_population_1999,
 	dc_population_2009,
 	dc_population_2019,
-	dc_population_2024
+	dc_population_2025
 ) |>
 	arrange(year)
 
 # %% Write data ----------------------------------------------------------
 
-write_csv(dc_population, here("data/processed/dc-population-1990-2024.csv"))
+write_csv(dc_population, here("data/processed/dc-population-1990-2025.csv"))
