@@ -1,0 +1,29 @@
+"Notes","State of Residence","State of Residence Code","Year","Year Code",Births
+,"District of Columbia","11","2023 (Final)","2023",7896
+,"District of Columbia","11","2024 (Final)","2024",7616
+,"District of Columbia","11","2025 (Provisional)","2025",7303
+"Total","District of Columbia","11",,,22815
+"Total",,,,,22815
+"---"
+"Dataset: Provisional Natality, 2023 through Last Month"
+"Query Parameters:"
+"State of Residence: District of Columbia (11)"
+"Group By: State of Residence; Year"
+"Show Totals: True"
+"Show Zero Values: False"
+"Show Suppressed: False"
+"Calculate Rates Per: 1,000"
+"---"
+"Help: See http://wonder.cdc.gov/wonder/help/natality-provisional.html for more information."
+"---"
+"Query Date: Feb 24, 2026 1:52:09 AM"
+"---"
+"Suggested Citation: Centers for Disease Control and Prevention, National Center for Health Statistics. National Vital Statistics"
+"System, Provisional Natality on CDC WONDER Online Database. Data are from the Natality Records 2023 through Last Month, as"
+"compiled from data provided by the 57 vital statistics jurisdictions through the Vital Statistics Cooperative Program. Accessed"
+"at http://wonder.cdc.gov/natality-expanded-provisional.html on Feb 24, 2026 1:52:09 AM"
+"---"
+Caveats:
+"1. Each birth record represents one liveborn infant."
+"2. 2025 data are provisional and subject to change. 2023-2024 data are final."
+"3. Births occurring through December 31, 2025 as of January 28, 2025."

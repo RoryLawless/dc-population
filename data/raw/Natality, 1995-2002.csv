@@ -1,0 +1,33 @@
+"Notes","State","State Code","Year","Year Code",Births
+,"District of Columbia","11","1995","1995",9014
+,"District of Columbia","11","1996","1996",8390
+,"District of Columbia","11","1997","1997",7927
+,"District of Columbia","11","1998","1998",7686
+,"District of Columbia","11","1999","1999",7522
+,"District of Columbia","11","2000","2000",7666
+,"District of Columbia","11","2001","2001",7625
+,"District of Columbia","11","2002","2002",7498
+"Total","District of Columbia","11",,,63328
+"Total",,,,,63328
+"---"
+"Dataset: Natality, 1995-2002"
+"Query Parameters:"
+"States: District of Columbia (11)"
+"Group By: State; Year"
+"Show Totals: True"
+"Show Zero Values: False"
+"Show Suppressed: False"
+"---"
+"Help: See http://wonder.cdc.gov/wonder/help/natality.html for more information."
+"---"
+"Query Date: Feb 24, 2026 1:57:36 AM"
+"---"
+"Suggested Citation: Centers for Disease Control and Prevention, National Center for Health Statistics. National Vital Statistics"
+"System, Natality on CDC WONDER Online Database. Data are from the Natality Records 1995-2002, as compiled from data provided by"
+"the 57 vital statistics jurisdictions through the Vital Statistics Cooperative Program. Accessed at"
+"http://wonder.cdc.gov/natality-v2002.html on Feb 24, 2026 1:57:36 AM"
+"---"
+Caveats:
+"1. Each birth record represents one liveborn infant."
+"2. Data are Suppressed when the data meet the criteria for confidentiality constraints. More information:"
+"http://wonder.cdc.gov/wonder/help/natality.html#Assurance of Confidentiality."
