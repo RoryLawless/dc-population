@@ -9,8 +9,8 @@ Ad-hoc R data analysis pipeline for District of Columbia population and birth st
 ## Pipeline architecture
 
 ```
-data/raw/  →  code/NN_process-*.R  →  data/processed/  ┬→  notebooks/*.ipynb  →  outputs/*.png
-                                                       └→  shiny-app/app.R    (interactive dashboard)
+data/raw/  →  code/NN_process-*.R  →  data/processed/  ┬→  notebooks/*.qmd  →  outputs/*.png
+                                                       └→  dc-population-explorer/app.R    (interactive dashboard)
 ```
 
 - **`code/`** — Numbered scripts (`01_`, `02_`). The prefix encodes run order; there is no build system tying them together. Each reads multiple heterogeneous sources and writes one tidy CSV.
@@ -18,7 +18,7 @@ data/raw/  →  code/NN_process-*.R  →  data/processed/  ┬→  notebooks/*.i
   - `02_process-births-data.R` globs `data/raw/Natality*.csv`, map-reads them with unified column types, then row-binds + dedupes. Any year ≥ 2025 is tagged `status = "provisional"`; finalized years are `"final"`.
 - **`data/raw/`** is source-of-truth and never mutated by scripts. When files arrive with spaces in names (e.g. `Natality, 1995-2002.csv`), leave them — the globs handle it.
 - **`notebooks/`** — Analysis + plotting. `dc-births.ipynb` uses `fable`/`tsibble`/`feasts` for time-series forecasting; `census-data.ipynb` pairs a population trend plot with a tract-level Gini choropleth via `urbnindicators`.
-- **`shiny-app/app.R`** — Two-tab bslib dashboard (`page_navbar`: Population, Births) with a single year-range slider in the sidebar driving reactives on both tabs. **Palette is a single source of truth**: the named vector `palette_dc` (lines ~53-60) feeds both `bs_theme()` slots (`bg`/`fg`/`primary`/`secondary`/`info`/`success`) and every ggplot `geom_*(color = ...)` call — if you add a color, add it there and wire it into both consumers. Plot theming is a plain ggplot `theme_dc_plot` applied globally via `theme_set()`; we deliberately do **not** use `thematic::thematic_shiny()` because it is incompatible with ggplot2 4.x + `geom_sf` ([rstudio/thematic#165](https://github.com/rstudio/thematic/issues/165)). Shared `summarize_series()` helper computes the value-box "latest" and percent-change strings off filtered data — keep its contract consistent so the two tabs' value boxes remain comparable.
+- **`dc-population-explorer/app.R`** — Two-tab bslib dashboard (`page_navbar`: Population, Births) with a single year-range slider in the sidebar driving reactives on both tabs. **Palette is a single source of truth**: the named vector `palette_dc` (lines ~53-60) feeds both `bs_theme()` slots (`bg`/`fg`/`primary`/`secondary`/`info`/`success`) and every ggplot `geom_*(color = ...)` call — if you add a color, add it there and wire it into both consumers. Plot theming is a plain ggplot `theme_dc_plot` applied globally via `theme_set()`; we deliberately do **not** use `thematic::thematic_shiny()` because it is incompatible with ggplot2 4.x + `geom_sf` ([rstudio/thematic#165](https://github.com/rstudio/thematic/issues/165)). Shared `summarize_series()` helper computes the value-box "latest" and percent-change strings off filtered data — keep its contract consistent so the two tabs' value boxes remain comparable.
 
 ## Conventions
 
@@ -38,7 +38,7 @@ data/raw/  →  code/NN_process-*.R  →  data/processed/  ┬→  notebooks/*.i
 No test suite. Typical loops:
 
 - **Rebuild processed data**: in R, `source(here::here("code/01_process-population-data.R"))` then `source(here::here("code/02_process-births-data.R"))`. Scripts are idempotent — they overwrite `data/processed/*.csv`.
-- **Run the dashboard**: `shiny::runApp("shiny-app")` from the project root. Offline-safe — reads only the two processed CSVs.
+- **Run the dashboard**: `shiny::runApp("dc-population-explorer")` from the project root. Offline-safe — reads only the two processed CSVs.
 - **Notebooks**: executed interactively (Positron/Jupyter with an R kernel). Checked-in `.ipynb` files contain the last-rendered outputs.
 
 ## Non-obvious dependencies
