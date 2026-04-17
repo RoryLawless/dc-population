@@ -1,0 +1,141 @@
+---
+title: Population Over Time
+format: html
+---
+
+```{r}
+# Packages and data
+
+library(tidyverse)
+library(scales)
+library(systemfonts)
+library(ragg)
+library(urbnindicators)
+library(sf)
+library(glue)
+library(here)
+
+dc_population <- read_csv("data/processed/dc-population-1990-2025.csv")
+
+# Helper to save plots as high-res PNGs with golden-ratio aspect ratio
+rlsave <- function(...) {
+	ggsave(
+		device = ragg::agg_png(),
+		width = 1000,
+		height = 1000 / ((1 + sqrt(5)) / 2),
+		scale = 2,
+		units = "px",
+		dpi = "retina",
+		...
+	)
+}
+
+# Custom ggplot theme built on theme_minimal
+theme_rory <- theme_minimal(
+	base_size = 12,
+	base_family = "Lato-Regular",
+	header_family = "PlayfairDisplayRoman-SemiBold",
+	paper = "#fbf5f5",
+	ink = "#070a0c",
+	accent = "#b46466"
+) +
+	theme(
+		plot.title.position = "plot",
+		title = element_text(size = 14),
+		axis.title = element_text(size = 12),
+		axis.text = element_text(size = 10)
+	)
+
+set_theme(theme_rory)
+```
+
+
+
+```{r}
+# Compute y-axis limits: pad by 1/3 of the data range above and below,
+# then round to nearest thousand for clean axis breaks
+ymax <- max(dc_population$value)
+ymin <- min(dc_population$value)
+span <- ymax - ymin
+
+yupper <- round(ymax + (1 / 3) * span, -3)
+ylower <- round(ymin - (1 / 3) * span, -3) + 3000
+
+population_plot <- dc_population |>
+	ggplot(aes(x = as.integer(year), y = value, group = 1)) +
+	geom_smooth(
+		method = "loess",
+		color = "#339589",
+		fill = "#b8b5a8",
+		lineend = "round"
+	) +
+	geom_line(
+		linewidth = 1,
+		color = "#335195",
+		lineend = "round",
+		linejoin = "round"
+	) +
+	labs(
+		title = "Population of the District of Columbia (1990-2025)",
+		x = "Year",
+		y = "Population"
+	) +
+	scale_x_continuous(
+		breaks = seq.int(1990, 2025, 5)
+	) +
+	scale_y_continuous(
+		breaks = seq.int(ylower, yupper, 25000),
+		limits = c(ylower, yupper),
+		expand = expansion(c(0, 0)),
+		labels = label_number(scale_cut = cut_short_scale())
+	) +
+	theme_sub_panel(
+		grid.major.x = element_blank(),
+		grid.minor = element_blank()
+	)
+
+rlsave(
+	filename = "outputs/dc-population-90-25.png",
+	plot = population_plot
+)
+
+population_plot
+```
+
+## Spatial Inequality: Gini Index by Census Tract
+
+```{r}
+# Pull ACS indicators with tract-level geometry for mapping
+dc_indicators <- compile_acs_data(
+	years = 2024,
+	geography = "tract",
+	states = "DC",
+	spatial = TRUE
+)
+```
+
+```{r}
+# Choropleth of Gini index by census tract
+gini_plot <- dc_indicators |>
+	ggplot() +
+	geom_sf(aes(fill = gini_index)) +
+	scale_fill_viridis_c(option = "magma", direction = -1) +
+	labs(
+		title = "2024 Gini Index by DC Census Tract",
+		fill = "Gini Index",
+		x = NULL,
+		y = NULL
+	) +
+	theme_sub_panel(
+		grid.major = element_blank(),
+		grid.minor = element_blank()
+	) +
+	theme_sub_axis(text = element_blank())
+
+rlsave(
+	filename = "outputs/dc-gini-index-2024.png",
+	plot = gini_plot
+)
+
+gini_plot
+```

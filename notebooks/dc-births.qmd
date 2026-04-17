@@ -1,0 +1,194 @@
+---
+title: Births over time
+format: html
+---
+
+```{r}
+# Packages and data
+
+library(tidyverse)
+library(scales)
+library(systemfonts)
+library(ragg)
+library(fable)
+library(tsibble)
+library(readxl)
+library(ggtime)
+library(feasts)
+library(urca)
+
+# dc_births <- read_csv("data/processed/dc-births-1995-2025.csv")
+
+conflicts_prefer(dplyr::filter)
+
+dc_births <- read_xlsx(
+	"data/raw/EdScape_Chapter 1 Population and Students_Births_2026.xlsx",
+	sheet = "Ch.1 Births Citywide",
+	.name_repair = str_to_snake
+)
+
+dc_births <- dc_births |>
+	select(
+		year_code = year,
+		births = number_of_births,
+		population = total_population,
+		birth_rate = birth_rate_per_1_000_population
+	)
+
+births_ts <- dc_births |>
+	as_tsibble(index = year_code)
+
+# # Helper to save plots as high-res PNGs with golden-ratio aspect ratio
+# rlsave <- function(...) {
+#   ggsave(
+#     device = ragg::agg_png(),
+#     width = 1000,
+#     height = 1000 / ((1 + sqrt(5)) / 2),
+#     scale = 2,
+#     units = "px",
+#     dpi = "retina",
+#     ...
+#   )
+# }
+
+# Custom ggplot theme built on theme_minimal
+theme_rory <- theme_minimal(
+	base_size = 12,
+	base_family = "Lato-Regular",
+	header_family = "PlayfairDisplayRoman-SemiBold",
+	paper = "#fbf5f5",
+	ink = "#070a0c",
+	accent = "#b46466"
+) +
+	theme(
+		plot.title.position = "plot",
+		title = element_text(size = 14),
+		axis.title = element_text(size = 12),
+		axis.text = element_text(size = 10)
+	)
+
+set_theme(theme_rory)
+```
+
+```{r}
+births_ts |>
+	autoplot(births)
+```
+
+```{r}
+# Compute y-axis limits: pad by 1/3 of the data range above and below,
+# then round to nearest thousand for clean axis breaks
+ymax <- max(dc_births$births)
+ymin <- min(dc_births$births)
+span <- ymax - ymin
+
+yupper <- round(ymax + (1 / 3) * span, -3)
+ylower <- round(ymin - (1 / 3) * span, -3)
+
+births_plot <- dc_births |>
+	ggplot(aes(x = as.integer(year_code), y = births, group = 1)) +
+	geom_smooth(
+		method = "loess",
+		color = "#339589",
+		fill = "#b8b5a8",
+		lineend = "round"
+	) +
+	geom_line(
+		linewidth = 1,
+		color = "#335195",
+		lineend = "round",
+		linejoin = "round"
+	) +
+	labs(
+		title = "Births in the District of Columbia (1995-2025)",
+		x = "Year",
+		y = "Births"
+	) +
+	scale_x_continuous(
+		breaks = seq.int(1995, 2025, 5)
+	) +
+	scale_y_continuous(
+		breaks = seq.int(ylower, yupper, 1000),
+		limits = c(ylower, yupper),
+		expand = expansion(c(0, 0)),
+		labels = label_number(scale_cut = cut_short_scale())
+	) +
+	theme_sub_panel(
+		grid.major.x = element_blank(),
+		grid.minor = element_blank()
+	)
+
+# rlsave(
+#   filename = "outputs/dc-births-95-25.png",
+#   plot = births_plot
+# )
+
+births_plot
+```
+
+```{r}
+births_ts |>
+	gg_tsdisplay(births)
+```
+
+```{r}
+births_ts |>
+	gg_tsdisplay(difference(births))
+```
+
+```{r}
+best_model <- births_ts |>
+	model(
+		arima210 = ARIMA(births ~ pdq(2, 1, 0)),
+		stepwise = ARIMA(births),
+		search = ARIMA(births, stepwise = FALSE)
+	)
+```
+
+```{r}
+best_model |>
+	mutate(var = "Births") |>
+	pivot_longer(
+		cols = !var,
+		names_to = "Model name",
+		values_to = "Orders"
+	)
+
+glance(best_model) |> arrange(AICc) |> select(.model:BIC)
+```
+
+```{r}
+best_model |>
+	select(arima210) |>
+	gg_tsresiduals()
+```
+
+```{r}
+augment(best_model) |>
+	filter(.model == "arima210") |>
+	features(.innov, ljung_box, lag = 10, dof = 3)
+```
+
+```{r}
+best_model |>
+	forecast(h = 5) |>
+	filter(.model == "arima210") |>
+	autoplot(births_ts)
+```
+
+```{r}
+final_model <- auto.arima(births_ts, c(1, 1, 0))
+summary(final_model)
+```
+
+```{r}
+final_forecast <- forecast(final_model, h = 5)
+```
+
+```{r}
+autoplot(final_forecast)
+```
+
+```{r}
+final_forecast
+```
