@@ -1,0 +1,6 @@
+{
+  "model": {
+    "id": "us.anthropic.claude-opus-4-7",
+    "provider": "bedrock"
+  }
+}

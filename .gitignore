@@ -79,3 +79,7 @@ rsconnect/
 /*_files/
 # End of https://www.toptal.com/developers/gitignore/api/r,jupyternotebooks,macos
 *.local.json
+
+# Claude Code: track only the shared settings file
+.claude/*
+!/.claude/settings.json
