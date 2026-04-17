@@ -17,7 +17,8 @@ ipython_config.py
 .AppleDouble
 .LSOverride
 # Icon must end with two \r
-Icon
+Icon
+
 # Thumbnails
 ._*
 # Files that might appear in the root of a volume
@@ -77,3 +78,4 @@ rsconnect/
 # R package: bookdown caching files
 /*_files/
 # End of https://www.toptal.com/developers/gitignore/api/r,jupyternotebooks,macos
+*.local.json
