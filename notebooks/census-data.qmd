@@ -49,8 +49,6 @@ theme_rory <- theme_minimal(
 set_theme(theme_rory)
 ```
 
-
-
 ```{r}
 # Compute y-axis limits: pad by 1/3 of the data range above and below,
 # then round to nearest thousand for clean axis breaks
@@ -114,8 +112,9 @@ dc_indicators <- compile_acs_data(
 )
 ```
 
-```{r}
 # Choropleth of Gini index by census tract
+
+```{r}
 gini_plot <- dc_indicators |>
 	ggplot() +
 	geom_sf(aes(fill = gini_index)) +
@@ -138,4 +137,36 @@ rlsave(
 )
 
 gini_plot
+```
+
+# Choropleth of percent below federal poverty limit
+
+```{r}
+poverty_plot <- dc_indicators |>
+	ggplot() +
+	geom_sf(aes(fill = federal_poverty_limit_below_allraces_percent)) +
+	scale_fill_viridis_c(
+		option = "magma",
+		direction = -1,
+		labels = label_percent()
+	) +
+	labs(
+		title = "% below the federal poverty limit",
+		caption = "ACS 5-year (2024 vintage) by census tract",
+		x = NULL,
+		y = NULL
+	) +
+	theme_sub_panel(
+		grid.major = element_blank(),
+		grid.minor = element_blank()
+	) +
+	theme_sub_axis(text = element_blank()) +
+	theme_sub_legend(title = element_blank())
+
+rlsave(
+	filename = "outputs/dc-federal-poverty-2024.png",
+	plot = poverty_plot
+)
+
+poverty_plot
 ```
