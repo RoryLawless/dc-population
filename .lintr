@@ -1,8 +1,0 @@
-linters: linters_with_defaults(
-        unused_import_linter(),
-        fixed_regex_linter(),
-        yoda_test_linter(),
-        whitespace_linter = NULL,
-        indentation_linter = NULL
-    )
-encoding: "UTF-8"
