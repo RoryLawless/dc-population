@@ -7,8 +7,14 @@ entrypoint = "app.R"
 title = "dc-population-explorer"
 files = [
     "/app.R",
-    "/.posit/publish/dc-population-explorer-0IOV.toml",
-    "/.posit/publish/deployments/deployment-TRLP.toml",
+    "/.posit/publish/dc-population-explorer-898U.toml",
+    "/.posit/publish/deployments/deployment-PQIS.toml",
+    "/data",
+    "!/data/processed",
+    "/data/processed/dc-births-1995-2025.csv",
+    "/data/processed/dc-population-1990-2025.csv",
+    "/renv",
+    "/renv.lock",
 ]
 validate = true
 product_type = "connect_cloud"

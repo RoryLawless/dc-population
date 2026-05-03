@@ -11,14 +11,14 @@ conflicts_prefer(dplyr::filter)
 # ---- Data (loaded once at startup) -------------------------------------
 
 dc_population <- read_csv(
-	here("data/processed/dc-population-1990-2025.csv"),
+	here("data", "dc-population-1990-2025.csv"),
 	show_col_types = FALSE
 ) |>
 	mutate(year = as.integer(year)) |>
 	select(year, value)
 
 dc_births <- read_csv(
-	here("data/processed/dc-births-1995-2025.csv"),
+	here("data", "dc-births-1995-2025.csv"),
 	show_col_types = FALSE
 ) |>
 	select(year, value = births, status)
