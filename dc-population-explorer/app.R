@@ -5,6 +5,7 @@ library(tidyverse)
 library(scales)
 library(here)
 library(conflicted)
+library(sf)
 
 conflicts_prefer(dplyr::filter)
 
@@ -24,6 +25,8 @@ dc_births <- read_csv(
 	select(year, value = births, status)
 
 year_bounds <- range(c(dc_population$year, dc_births$year))
+
+dc_acs <- readRDS(here("data", "dc-acs-tracts-2024.rds"))
 
 # ---- Helper for value box metrics --------------------------------------
 
@@ -87,6 +90,14 @@ theme_dc_plot <- theme_minimal(
 	)
 
 theme_set(theme_dc_plot)
+
+# Map overlay: strips axes and grid from the base plot theme for choropleth use
+theme_dc_map <- theme(
+	axis.text = element_blank(),
+	axis.ticks = element_blank(),
+	axis.title = element_blank(),
+	panel.grid = element_blank()
+)
 
 # ---- UI ----------------------------------------------------------------
 
@@ -157,6 +168,33 @@ ui <- page_navbar(
 			card_header("Births over time"),
 			plotOutput("births_plot")
 		)
+	),
+
+	nav_panel(
+		"Geography",
+		layout_column_wrap(
+			width = 1 / 2,
+			card(
+				full_screen = TRUE,
+				card_header("People of color (% of tract population)"),
+				plotOutput("geo_poc")
+			),
+			card(
+				full_screen = TRUE,
+				card_header("Median household income"),
+				plotOutput("geo_income")
+			),
+			card(
+				full_screen = TRUE,
+				card_header("Below federal poverty line"),
+				plotOutput("geo_poverty")
+			),
+			card(
+				full_screen = TRUE,
+				card_header("Renter-occupied housing"),
+				plotOutput("geo_tenure")
+			)
+		)
 	)
 )
 
@@ -223,6 +261,68 @@ server <- function(input, output, session) {
 			) +
 			scale_y_continuous(labels = label_comma()) +
 			labs(x = "Year", y = "Births", color = NULL)
+	})
+
+	output$geo_poc <- renderPlot({
+		dc_acs |>
+			ggplot() +
+			geom_sf(aes(fill = race_personofcolor_percent), color = NA) +
+			scale_fill_viridis_c(
+				option = "magma",
+				direction = -1,
+				na.value = palette_dc[["sand"]],
+				labels = label_percent(accuracy = 1)
+			) +
+			labs(fill = NULL) +
+			theme_dc_map
+	})
+
+	output$geo_income <- renderPlot({
+		dc_acs |>
+			ggplot() +
+			geom_sf(
+				aes(fill = median_household_income_universe_allraces),
+				color = NA
+			) +
+			scale_fill_viridis_c(
+				option = "magma",
+				direction = -1,
+				na.value = palette_dc[["sand"]],
+				labels = label_dollar(scale_cut = cut_short_scale())
+			) +
+			labs(fill = NULL) +
+			theme_dc_map
+	})
+
+	output$geo_poverty <- renderPlot({
+		dc_acs |>
+			ggplot() +
+			geom_sf(
+				aes(fill = federal_poverty_limit_below_allraces_percent),
+				color = NA
+			) +
+			scale_fill_viridis_c(
+				option = "magma",
+				direction = -1,
+				na.value = palette_dc[["sand"]],
+				labels = label_percent(accuracy = 1)
+			) +
+			labs(fill = NULL) +
+			theme_dc_map
+	})
+
+	output$geo_tenure <- renderPlot({
+		dc_acs |>
+			ggplot() +
+			geom_sf(aes(fill = tenure_renter_occupied_percent), color = NA) +
+			scale_fill_viridis_c(
+				option = "magma",
+				direction = -1,
+				na.value = palette_dc[["sand"]],
+				labels = label_percent(accuracy = 1)
+			) +
+			labs(fill = NULL) +
+			theme_dc_map
 	})
 }
 
